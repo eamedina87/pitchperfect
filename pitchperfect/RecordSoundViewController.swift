@@ -22,16 +22,9 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
         stopRecordingButton.isEnabled = false
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-
     @IBAction func recordAudio(_ sender: Any) {
-        recordingLabel.text = "Recording in Progress"
-        recordButton.isEnabled = false
-        stopRecordingButton.isEnabled = true
+        showUI(isDefault: false)
+        
         let dirPath = NSSearchPathForDirectoriesInDomains(.documentDirectory,.userDomainMask, true)[0] as String
         let recordingName = "recordedVoice.wav"
         let pathArray = [dirPath, recordingName]
@@ -48,13 +41,17 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
         audioRecorder.record()
     }
     @IBAction func stopRecording(_ sender: Any) {
-        recordingLabel.text = "Tap to Record"
-        recordButton.isEnabled = true
-        stopRecordingButton.isEnabled = false
+        showUI(isDefault: true)
         audioRecorder.stop()
         let session = AVAudioSession.sharedInstance()
         try! session.setActive(false)
         
+    }
+    
+    func showUI(isDefault:Bool){
+        recordingLabel.text = isDefault ? "Tap to Record" : "Recording in Progress"
+        recordButton.isEnabled = isDefault
+        stopRecordingButton.isEnabled = !isDefault
     }
     
     
@@ -62,7 +59,7 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
         if flag{
             performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
         } else {
-            print("save unsuccesful")
+            showErrorAlert()
         }
     }
     
@@ -72,6 +69,17 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
             let url = sender as! URL
             playSoundsVC.recordedAudioURL = url
         }
+    }
+    func showErrorAlert(){
+        let alert = UIAlertController()
+        alert.title = "Error"
+        alert.message = "An error ocurred while saving the audio"
+        let action = UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel) { action in
+            self.dismiss(animated: true, completion: nil)
+        }
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+        
     }
 }
 
